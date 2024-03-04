@@ -4,7 +4,13 @@ const express = require("express");
 const router = express.Router();
 
 const { User, validateUser } = require("../models/user");
+const auth = require("../middlewares/auth");
 const validateWith = require("../middlewares/validate");
+
+router.get("/me", auth, async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -__v");
+  res.send(user);
+});
 
 router.post("/", validateWith(validateUser), async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
