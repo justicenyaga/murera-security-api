@@ -1,3 +1,4 @@
 {
-  "db": "mongodb://localhost/murera-security"
+  "db": "mongodb://localhost/murera-security",
+  "jwtPrivateKey": ""
 }
