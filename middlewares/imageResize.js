@@ -9,14 +9,16 @@ module.exports = async (req, res, next) => {
 
   if (!file) return res.status(400).send("No image file uploaded.");
 
+  const filename = file.filename + ".jpg";
+
   await sharp(file.path)
     .resize(500, 500)
     .jpeg({ quality: 50 })
-    .toFile(path.resolve(outputFolder, file.filename + ".jpg"));
+    .toFile(path.resolve(outputFolder, filename));
 
   fs.unlinkSync(file.path);
 
-  req.image = file.filename;
+  req.image = filename;
 
   next();
 };
