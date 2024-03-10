@@ -87,4 +87,10 @@ router.post(
   },
 );
 
+router.get("/me", auth, async (req, res) => {
+  const resident = await Resident.findOne({ "user._id": req.user._id });
+  if (!resident) return res.status(404).send("Resident not found.");
+  res.send(residentMapper(resident.toObject()));
+});
+
 module.exports = router;
