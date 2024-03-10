@@ -8,6 +8,7 @@ const { Resident, validateResident } = require("../models/resident");
 const auth = require("../middlewares/auth");
 const imageResize = require("../middlewares/imageResize");
 const validateWith = require("../middlewares/validate");
+const residentMapper = require("../mappers/residents");
 
 // Set up multer for profile picture upload
 const storage = multer.diskStorage({
@@ -74,6 +75,7 @@ router.post(
     residentData.image = req.image;
 
     resident = await Resident.create(residentData);
+    resident = residentMapper(resident.toObject());
     res.send(resident);
   },
 );
