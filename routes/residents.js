@@ -5,6 +5,7 @@ const express = require("express");
 const router = express.Router();
 
 const { Resident, validateResident } = require("../models/resident");
+const admin = require("../middlewares/admin");
 const auth = require("../middlewares/auth");
 const imageResize = require("../middlewares/imageResize");
 const validateWith = require("../middlewares/validate");
@@ -34,6 +35,12 @@ const upload = multer({
       cb(new Error("Only image files are allowed."), false);
     }
   },
+});
+
+router.get("/", [auth, admin], async (_req, res) => {
+  let residents = await Resident.find().sort("user.firstName");
+  residents = residents.map((resident) => residentMapper(resident.toObject()));
+  res.send(residents);
 });
 
 router.post(
