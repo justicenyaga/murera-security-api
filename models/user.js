@@ -32,8 +32,9 @@ const userSchema = new mongoose.Schema(
     },
     isActive: {
       type: Boolean,
-      default: true,
+      default: false,
     },
+    emailToken: String,
     isAdmin: Boolean,
     isSuperAdmin: Boolean,
   },
