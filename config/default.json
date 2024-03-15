@@ -1,4 +1,6 @@
 {
   "db": "mongodb://localhost/murera-security",
-  "jwtPrivateKey": ""
+  "jwtPrivateKey": "",
+  "email": "",
+  "emailPassword": ""
 }

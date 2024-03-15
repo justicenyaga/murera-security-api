@@ -1,3 +1,5 @@
 {
-  "jwtPrivateKey": "mureraSec_jwtPrivateKey"
+  "jwtPrivateKey": "mureraSec_jwtPrivateKey",
+  "email": "mureraSec_email",
+  "emailPassword": "mureraSec_emailPassword"
 }
