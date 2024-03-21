@@ -10,6 +10,8 @@ const error = require("../middlewares/error");
 module.exports = function (app) {
   app.use(morgan("tiny"));
   app.use(express.static("public"));
+  app.use(express.static("views"));
+  app.set("view engine", "ejs");
   app.use(express.json());
   app.use(compression());
 
