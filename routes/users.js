@@ -2,12 +2,14 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const config = require("config");
 const crypto = require("crypto");
+const Joi = require("joi");
 const express = require("express");
 const router = express.Router();
 
 const { User, validateUser } = require("../models/user");
 const auth = require("../middlewares/auth");
 const logger = require("../logger");
+const resendActivationEmail = require("../utils/emails/resendActivation");
 const sendActivationEmail = require("../utils/emails/activation");
 const sendActivationSuccessEmail = require("../utils/emails/activationSuccess");
 const views = require("../views/views");
@@ -45,6 +47,29 @@ router.post("/", validateWith(validateUser), async (req, res) => {
   res.send(_.pick(user, ["_id", "firstName", "lastName", "email"]));
 });
 
+router.post(
+  "/resend-verification",
+  validateWith(validateEmail),
+  async (req, res) => {
+    const user = await User.findOne({ email: req.body.email });
+    if (!user) {
+      return res.status(404).send("User with the given email was not found");
+    }
+
+    if (user.isActive) return res.status(400).send("User is already verified");
+
+    const emailData = _.pick(user, ["firstName", "email", "emailToken"]);
+
+    const { ok, error } = await resendActivationEmail(emailData);
+    if (!ok) {
+      logger.error(error.message);
+      return res.status(500).send("Failed to send email.");
+    }
+
+    return res.send("Verification email sent");
+  },
+);
+
 router.get("/verify-email/:emailToken", async (req, res) => {
   const user = await User.findOne({ emailToken: req.params.emailToken });
   if (!user) {
@@ -65,5 +90,12 @@ router.get("/verify-email/:emailToken", async (req, res) => {
 
   res.render(views.ACTIVATION_SUCCESS, { serverUrl });
 });
+
+function validateEmail(email) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).required().email(),
+  });
+  return schema.validate(email);
+}
 
 module.exports = router;
