@@ -3,7 +3,7 @@ const sendMail = require("./sendMail");
 
 module.exports = (user) => {
   const to = user.email;
-  const subject = "Resend verificaition link";
+  const subject = "Resend verification link";
   const html = `
     <p>Hi ${user.firstName}👋,</p>
     <p>You are receiving this email because you requested a verification link with Murera Security. Click the button below to verify your email.</p>
