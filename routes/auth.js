@@ -8,10 +8,12 @@ const validateWith = require("../middlewares/validate");
 
 router.post("/", validateWith(validateBody), async (req, res) => {
   const user = await User.findOne({ email: req.body.email });
-  if (!user) return res.status(400).send("Invalid email or password.");
+  if (!user) return res.status(400).send("Invalid email and/or password.");
 
   const validpassword = await bcrypt.compare(req.body.password, user.password);
-  if (!validpassword) return res.status(400).send("Invalid email or password.");
+  if (!validpassword) {
+    return res.status(400).send("Invalid email and/or password.");
+  }
 
   res.send(user.generateAuthToken());
 });
