@@ -21,6 +21,13 @@ const residentSchema = new mongoose.Schema(
           minlength: 3,
           maxlength: 50,
         },
+        nationalId: {
+          type: Number,
+          required: true,
+          unique: true,
+          min: 100000,
+          max: 50000000,
+        },
         email: {
           type: String,
           required: true,
@@ -40,13 +47,7 @@ const residentSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 255,
     },
-    nationalId: {
-      type: Number,
-      required: true,
-      unique: true,
-      min: 100000,
-      max: 50000000,
-    },
+
     dob: {
       type: Date,
       required: true,
@@ -95,7 +96,6 @@ const Resident = mongoose.model("Resident", residentSchema);
 
 function validateResident(resident) {
   const schema = Joi.object({
-    nationalId: Joi.number().min(100000).max(50000000).required(),
     dob: Joi.date().required(),
     phone: Joi.string().min(6).max(20).required(),
     gender: Joi.string().min(2).max(30).required(),

@@ -17,6 +17,13 @@ const userSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 50,
     },
+    nationalId: {
+      type: Number,
+      required: true,
+      unique: true,
+      min: 100000,
+      max: 50000000,
+    },
     email: {
       type: String,
       required: true,
@@ -47,6 +54,7 @@ userSchema.methods.generateAuthToken = function () {
       _id: this._id,
       firstName: this.firstName,
       lastName: this.lastName,
+      nationalId: this.nationalId,
       email: this.email,
       isActive: this.isActive,
       isAdmin: this.isAdmin,
@@ -63,6 +71,7 @@ function validateUser(user) {
   const schema = Joi.object({
     firstName: Joi.string().min(3).max(50).required(),
     lastName: Joi.string().min(3).max(50).required(),
+    nationalId: Joi.number().min(100000).max(50000000).required(),
     email: Joi.string().min(5).max(255).required().email(),
     password: Joi.string().min(5).max(255).required(),
     isAdmin: Joi.boolean(),
