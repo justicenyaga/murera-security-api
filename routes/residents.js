@@ -50,24 +50,17 @@ router.post(
     let resident = await Resident.findOne({ "user._id": req.user._id });
     if (resident) return res.status(400).send("Resident already registered.");
 
-    resident = await Resident.findOne({ nationalId: req.body.nationalId });
-    if (resident) {
-      return res
-        .status(400)
-        .send("Resident with the given national ID already registered.");
-    }
-
     const userData = _.pick(req.user, [
       "_id",
       "firstName",
       "lastName",
+      "nationalId",
       "email",
       "isActive",
     ]);
 
     const residentData = {
       ..._.pick(req.body, [
-        "nationalId",
         "dob",
         "phone",
         "gender",

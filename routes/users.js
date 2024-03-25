@@ -24,10 +24,18 @@ router.get("/me", auth, async (req, res) => {
 
 router.post("/", validateWith(validateUser), async (req, res) => {
   let user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(400).send("User already registered.");
+  if (user) {
+    return res.status(400).send("An account with this email already exists.");
+  }
 
   user = new User({
-    ..._.pick(req.body, ["firstName", "lastName", "email", "password"]),
+    ..._.pick(req.body, [
+      "firstName",
+      "lastName",
+      "nationalId",
+      "email",
+      "password",
+    ]),
     emailToken: crypto.randomBytes(64).toString("hex"),
   });
 
