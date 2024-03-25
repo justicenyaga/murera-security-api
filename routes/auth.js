@@ -4,6 +4,7 @@ const express = require("express");
 const router = express.Router();
 
 const { User } = require("../models/user");
+const auth = require("../middlewares/auth");
 const validateWith = require("../middlewares/validate");
 
 router.post("/", validateWith(validateBody), async (req, res) => {
@@ -16,6 +17,14 @@ router.post("/", validateWith(validateBody), async (req, res) => {
   }
 
   res.send(user.generateAuthToken());
+});
+
+router.post("/refresh-token", auth, async (req, res) => {
+  const user = await User.findById(req.user._id).select("-password -__v");
+  if (!user) return res.status(404).send("Invalid token");
+
+  const token = user.generateAuthToken();
+  res.header("x-auth-token", token).send(user);
 });
 
 function validateBody(body) {
