@@ -23,26 +23,33 @@ router.get("/me", auth, async (req, res) => {
 });
 
 router.post("/", validateWith(validateUser), async (req, res) => {
-  let user = await User.findOne({ email: req.body.email });
+  const { firstName, lastName, nationalId, email, password } = req.body;
+
+  let user = await User.findOne({ nationalId });
+  if (user) {
+    return res
+      .status(400)
+      .send("User with the given ID number already registered.");
+  }
+
+  user = await User.findOne({ email });
   if (user) {
     return res.status(400).send("An account with this email already exists.");
   }
 
   user = new User({
-    ..._.pick(req.body, [
-      "firstName",
-      "lastName",
-      "nationalId",
-      "email",
-      "password",
-    ]),
+    firstName,
+    lastName,
+    nationalId,
+    email,
+    password,
     emailToken: crypto.randomBytes(64).toString("hex"),
   });
 
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
 
-  const emailData = _.pick(user, ["firstName", "email", "emailToken"]);
+  const emailData = { firstName, email, emailToken: user.emailToken };
 
   const { ok, error } = await sendActivationEmail(emailData);
   if (!ok) {
@@ -52,7 +59,7 @@ router.post("/", validateWith(validateUser), async (req, res) => {
 
   await user.save();
 
-  res.send(_.pick(user, ["_id", "firstName", "lastName", "email"]));
+  res.send({ _id: user._id, firstName, lastName, email });
 });
 
 router.post(
