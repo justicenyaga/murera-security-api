@@ -1,3 +1,4 @@
+const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const Joi = require("joi");
 const express = require("express");
@@ -30,7 +31,10 @@ router.post("/", validateWith(validateBody), async (req, res) => {
     return res.status(400).send("Incorrect password.");
   }
 
-  res.send(user.generateAuthToken());
+  const token = user.generateAuthToken();
+  res
+    .header("x-auth-token", token)
+    .send(_.pick(user, ["_id", "firstName", "lastName", "email"]));
 });
 
 router.post("/refresh-token", auth, async (req, res) => {
