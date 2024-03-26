@@ -42,6 +42,8 @@ const userSchema = new mongoose.Schema(
       default: false,
     },
     emailToken: String,
+    passwordResetOtp: Number,
+    passwordResetOtpExpiry: Date,
     isAdmin: Boolean,
     isSuperAdmin: Boolean,
   },
