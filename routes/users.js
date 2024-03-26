@@ -12,6 +12,7 @@ const logger = require("../logger");
 const resendActivationEmail = require("../utils/emails/resendActivation");
 const sendActivationEmail = require("../utils/emails/activation");
 const sendActivationSuccessEmail = require("../utils/emails/activationSuccess");
+const sendPasswordResetOtp = require("../utils/emails/passwordResetOtp");
 const views = require("../views/views");
 const validateWith = require("../middlewares/validate");
 
@@ -85,6 +86,47 @@ router.post(
   },
 );
 
+router.post(
+  "/password-reset-request",
+  validateWith(validateEmailOrID),
+  async (req, res) => {
+    const { email, nationalId } = req.body;
+    let user;
+    if (email) {
+      user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).send("User with the given email was not found");
+      }
+    } else {
+      user = await User.findOne({ nationalId });
+      if (!user) {
+        return res
+          .status(404)
+          .send("User with the given national ID was not found");
+      }
+    }
+
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    const otpExpiry = new Date();
+    otpExpiry.setMinutes(otpExpiry.getMinutes() + 10); // 10 minutes from now
+
+    user.passwordResetOtp = otp;
+    user.passwordResetOtpExpiry = otpExpiry;
+
+    const emailData = _.pick(user, ["firstName", "email", "passwordResetOtp"]);
+
+    const { ok, error } = await sendPasswordResetOtp(emailData);
+    if (!ok) {
+      logger.error(error.message);
+      return res.status(500).send("Failed to send email.");
+    }
+
+    await user.save();
+
+    res.send("Password reset OTP sent");
+  },
+);
+
 router.get("/verify-email/:emailToken", async (req, res) => {
   const user = await User.findOne({ emailToken: req.params.emailToken });
   if (!user) {
@@ -111,6 +153,18 @@ function validateEmail(email) {
     email: Joi.string().min(5).max(255).required().email(),
   });
   return schema.validate(email);
+}
+
+function validateEmailOrID(emailOrId) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).email(),
+    nationalId: Joi.number().min(100000).max(50000000),
+  })
+    .or("email", "nationalId")
+    .messages({
+      "object.missing": '"email" or "nationalId" is required.',
+    });
+  return schema.validate(emailOrId);
 }
 
 module.exports = router;
