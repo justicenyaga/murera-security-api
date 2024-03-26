@@ -13,6 +13,7 @@ const resendActivationEmail = require("../utils/emails/resendActivation");
 const sendActivationEmail = require("../utils/emails/activation");
 const sendActivationSuccessEmail = require("../utils/emails/activationSuccess");
 const sendPasswordResetOtp = require("../utils/emails/passwordResetOtp");
+const sendPasswordResetSuccessEmail = require("../utils/emails/passwordResetSuccess");
 const views = require("../views/views");
 const validateWith = require("../middlewares/validate");
 
@@ -141,6 +142,33 @@ router.post(
   },
 );
 
+router.post(
+  "/reset-password",
+  validateWith(passwordResetValidator),
+  async (req, res) => {
+    const { email, newPassword } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(404).send("User not found");
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+
+    const emailData = { email, firstName: user.firstName };
+    const { ok, error } = await sendPasswordResetSuccessEmail(emailData);
+    if (!ok) {
+      logger.error(error.message);
+      return res.status(500).send("Failed to send email.");
+    }
+
+    user.passwordResetOtp = null;
+    user.passwordResetOtpExpiry = null;
+
+    await user.save();
+
+    res.send("Password successfully reset");
+  },
+);
+
 router.get("/verify-email/:emailToken", async (req, res) => {
   const user = await User.findOne({ emailToken: req.params.emailToken });
   if (!user) {
@@ -186,6 +214,14 @@ function validateOtp(otp) {
     otp: Joi.number().min(100000).max(999999).required(),
   });
   return schema.validate(otp);
+}
+
+function passwordResetValidator(password) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).required().email(),
+    newPassword: Joi.string().min(5).max(255).required(),
+  });
+  return schema.validate(password);
 }
 
 module.exports = router;
