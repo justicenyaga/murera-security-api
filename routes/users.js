@@ -127,6 +127,20 @@ router.post(
   },
 );
 
+router.post(
+  "/verify-password-reset-otp",
+  validateWith(validateOtp),
+  async (req, res) => {
+    const user = await User.findOne({
+      passwordResetOtp: req.body.otp,
+      passwordResetOtpExpiry: { $gt: Date.now() },
+    });
+    if (!user) return res.status(400).send("Invalid or expired OTP");
+
+    res.send({ email: user.email });
+  },
+);
+
 router.get("/verify-email/:emailToken", async (req, res) => {
   const user = await User.findOne({ emailToken: req.params.emailToken });
   if (!user) {
@@ -165,6 +179,13 @@ function validateEmailOrID(emailOrId) {
       "object.missing": '"email" or "nationalId" is required.',
     });
   return schema.validate(emailOrId);
+}
+
+function validateOtp(otp) {
+  const schema = Joi.object({
+    otp: Joi.number().min(100000).max(999999).required(),
+  });
+  return schema.validate(otp);
 }
 
 module.exports = router;
