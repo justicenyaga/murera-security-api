@@ -24,6 +24,13 @@ router.get("/me", auth, async (req, res) => {
   res.send(user);
 });
 
+router.post("/check-email", validateWith(validateEmail), async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+  if (user) return res.status(400).send("Email already registered");
+
+  res.send("Email is available");
+});
+
 router.post("/", validateWith(validateUser), async (req, res) => {
   const { firstName, lastName, nationalId, email, password } = req.body;
 
