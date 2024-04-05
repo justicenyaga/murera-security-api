@@ -31,6 +31,13 @@ router.post("/check-email", validateWith(validateEmail), async (req, res) => {
   res.send("Email is available");
 });
 
+router.post("/check-nid", validateWith(validateNId), async (req, res) => {
+  const user = await User.findOne({ nationalId: req.body.nationalId });
+  if (user) return res.status(400).send("National ID already registered");
+
+  res.send("National ID is available");
+});
+
 router.post("/", validateWith(validateUser), async (req, res) => {
   const { firstName, lastName, nationalId, email, password } = req.body;
 
@@ -202,6 +209,13 @@ function validateEmail(email) {
     email: Joi.string().min(5).max(255).required().email(),
   });
   return schema.validate(email);
+}
+
+function validateNId(nid) {
+  const schema = Joi.object({
+    nationalId: Joi.number().min(100000).max(50000000).required(),
+  });
+  return schema.validate(nid);
 }
 
 function validateEmailOrID(emailOrId) {
