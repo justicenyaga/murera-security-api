@@ -47,7 +47,6 @@ const residentSchema = new mongoose.Schema(
       minlength: 3,
       maxlength: 255,
     },
-
     dob: {
       type: Date,
       required: true,
@@ -57,12 +56,6 @@ const residentSchema = new mongoose.Schema(
       required: true,
       minlength: 6,
       maxlength: 15,
-    },
-    gender: {
-      type: String,
-      required: true,
-      minlength: 2,
-      maxlength: 30,
     },
     county: {
       type: String,
@@ -98,7 +91,6 @@ function validateResident(resident) {
   const schema = Joi.object({
     dob: Joi.date().required(),
     phone: Joi.string().min(6).max(15).required(),
-    gender: Joi.string().min(2).max(30).required(),
     county: Joi.string().min(3).max(50).required(),
     subCounty: Joi.string().min(3).max(50).required(),
     ward: Joi.string().min(3).max(50).required(),

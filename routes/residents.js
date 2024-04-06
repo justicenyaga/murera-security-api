@@ -63,7 +63,6 @@ router.post(
       ..._.pick(req.body, [
         "dob",
         "phone",
-        "gender",
         "county",
         "subCounty",
         "ward",
