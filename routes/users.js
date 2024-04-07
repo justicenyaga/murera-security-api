@@ -87,6 +87,9 @@ router.post(
 
     if (user.isActive) return res.status(400).send("User is already verified");
 
+    user.emailToken = crypto.randomBytes(64).toString("hex");
+    await user.save();
+
     const emailData = _.pick(user, ["firstName", "email", "emailToken"]);
 
     const { ok, error } = await resendActivationEmail(emailData);
