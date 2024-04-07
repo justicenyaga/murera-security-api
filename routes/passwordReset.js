@@ -67,7 +67,7 @@ router.post("/request", validateWith(validateEmailOrID), async (req, res) => {
 
   await user.save();
 
-  res.send("Password reset OTP sent");
+  res.send({ email: user.email });
 });
 
 router.post("/verify-otp", validateWith(validateOtp), async (req, res) => {
