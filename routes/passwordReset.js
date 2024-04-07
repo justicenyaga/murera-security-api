@@ -30,7 +30,10 @@ router.post("/", validateWith(passwordResetValidator), async (req, res) => {
 
   await user.save();
 
-  res.send("Password successfully reset");
+  const msg = "Password successfully reset";
+  const status = user.isActive ? 200 : 201;
+
+  res.status(status).send(msg);
 });
 
 router.post("/request", validateWith(validateEmailOrID), async (req, res) => {
