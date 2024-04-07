@@ -77,7 +77,7 @@ router.post("/verify-otp", validateWith(validateOtp), async (req, res) => {
   });
   if (!user) return res.status(400).send("Invalid or expired OTP");
 
-  res.send({ email: user.email });
+  res.send("OTP verified successfully.");
 });
 
 function validateEmailOrID(emailOrId) {
