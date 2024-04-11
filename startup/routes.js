@@ -4,7 +4,6 @@ const morgan = require("morgan");
 
 const auth = require("../routes/auth");
 const passwordReset = require("../routes/passwordReset");
-const residents = require("../routes/residents.js");
 const users = require("../routes/users");
 const error = require("../middlewares/error");
 
@@ -18,7 +17,6 @@ module.exports = function (app) {
 
   app.use("/api/auth", auth);
   app.use("/api/password-reset", passwordReset);
-  app.use("/api/residents", residents);
   app.use("/api/users", users);
 
   app.use(error);

@@ -8,10 +8,12 @@ const router = express.Router();
 
 const { User, validateUser } = require("../models/user");
 const auth = require("../middlewares/auth");
+const imageResize = require("../middlewares/imageResize");
 const logger = require("../logger");
 const resendActivationEmail = require("../utils/emails/resendActivation");
 const sendActivationEmail = require("../utils/emails/activation");
 const sendActivationSuccessEmail = require("../utils/emails/activationSuccess");
+const userMapper = require("../mappers/user");
 const views = require("../views/views");
 const validateWith = require("../middlewares/validate");
 
@@ -37,33 +39,36 @@ router.post("/check-nid", validateWith(validateNId), async (req, res) => {
 });
 
 router.post("/", validateWith(validateUser), async (req, res) => {
-  const { firstName, lastName, nationalId, email, password } = req.body;
+  const data = req.body;
 
-  let user = await User.findOne({ nationalId });
+  let user = await User.findOne({ nationalId: data.nationalId });
   if (user) {
     return res
       .status(400)
       .send("User with the given ID number already registered.");
   }
 
-  user = await User.findOne({ email });
+  user = await User.findOne({ email: data.email });
   if (user) {
     return res.status(400).send("An account with this email already exists.");
   }
 
   user = new User({
-    firstName,
-    lastName,
-    nationalId,
-    email,
-    password,
+    firstName: data.firstName,
+    lastName: data.lastName,
+    nationalId: data.nationalId,
+    email: data.email,
+    dob: data.dob,
+    phone: data.phone,
+    image: "default.jpg",
+    password: data.password,
     emailToken: crypto.randomBytes(64).toString("hex"),
   });
 
   const salt = await bcrypt.genSalt(10);
   user.password = await bcrypt.hash(user.password, salt);
 
-  const emailData = { firstName, email, emailToken: user.emailToken };
+  const emailData = _.pick(user, ["firstName", "email", "emailToken"]);
 
   const { ok, error } = await sendActivationEmail(emailData);
   if (!ok) {
@@ -73,7 +78,8 @@ router.post("/", validateWith(validateUser), async (req, res) => {
 
   await user.save();
 
-  res.send({ _id: user._id, firstName, lastName, email });
+  const omitFields = ["emailToken", "password", "__v", "updatedAt"];
+  res.send(userMapper(_.omit(user.toObject(), omitFields)));
 });
 
 router.post(

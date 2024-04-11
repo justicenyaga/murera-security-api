@@ -1,10 +1,10 @@
 const config = require("config");
 
-const mapper = (resident) => {
+const mapper = (user) => {
   const baseUrl = config.get("assetsBaseUrl");
   return {
-    ...resident,
-    image: baseUrl + resident.image,
+    ...user,
+    image: baseUrl + user.image,
   };
 };
 

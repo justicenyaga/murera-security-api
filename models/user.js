@@ -31,6 +31,21 @@ const userSchema = new mongoose.Schema(
       maxlength: 255,
       unique: true,
     },
+    image: {
+      type: String,
+      minlength: 3,
+      maxlength: 255,
+    },
+    dob: {
+      type: Date,
+      required: true,
+    },
+    phone: {
+      type: String,
+      required: true,
+      minlength: 6,
+      maxlength: 15,
+    },
     password: {
       type: String,
       required: true,
@@ -75,6 +90,9 @@ function validateUser(user) {
     lastName: Joi.string().min(3).max(50).required(),
     nationalId: Joi.number().min(100000).max(50000000).required(),
     email: Joi.string().min(5).max(255).required().email(),
+    image: Joi.string().min(3).max(255),
+    dob: Joi.date().required(),
+    phone: Joi.string().min(6).max(15).required(),
     password: Joi.string().min(5).max(255).required(),
     isAdmin: Joi.boolean(),
     isSuperAdmin: Joi.boolean(),
