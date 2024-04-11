@@ -2,6 +2,8 @@ const _ = require("lodash");
 const bcrypt = require("bcrypt");
 const config = require("config");
 const crypto = require("crypto");
+const multer = require("multer");
+const path = require("path");
 const Joi = require("joi");
 const express = require("express");
 const router = express.Router();
@@ -18,6 +20,31 @@ const views = require("../views/views");
 const validateWith = require("../middlewares/validate");
 
 const serverUrl = config.get("serverUrl");
+
+const storage = multer.diskStorage({
+  destination: function (_req, _file, cb) {
+    cb(null, "uploads");
+  },
+  filename: function (_req, file, cb) {
+    const ext = path.extname(file.originalname);
+    let basename = path.basename(file.originalname, ext);
+    basename = `${basename}-${Date.now()}`;
+
+    cb(null, basename);
+  },
+});
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 1024 * 1024 * 25 },
+  fileFilter: function (_req, file, cb) {
+    if (file.mimetype.startsWith("image")) {
+      cb(null, true);
+    } else {
+      cb(new Error("Only image files are allowed."), false);
+    }
+  },
+});
 
 router.get("/me", auth, async (req, res) => {
   const user = await User.findById(req.user._id).select("-password -__v");
@@ -81,6 +108,20 @@ router.post("/", validateWith(validateUser), async (req, res) => {
   const omitFields = ["emailToken", "password", "__v", "updatedAt"];
   res.send(userMapper(_.omit(user.toObject(), omitFields)));
 });
+
+router.post(
+  "/upload-image",
+  [upload.single("image"), auth, imageResize],
+  async (req, res) => {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).send("User not found");
+
+    user.image = req.image;
+    await user.save();
+
+    res.send("Image uploaded successfully");
+  },
+);
 
 router.post(
   "/resend-verification",
