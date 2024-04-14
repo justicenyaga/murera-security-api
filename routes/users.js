@@ -47,8 +47,10 @@ const upload = multer({
 });
 
 router.get("/me", auth, async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password -__v");
-  res.send(user);
+  const user = await User.findById(req.user._id).select(
+    "-password -__v -emailToken -passwordResetOtp -passwordResetOtpExpiry -updatedAt",
+  );
+  res.send(userMapper(user.toObject()));
 });
 
 router.post("/check-email", validateWith(validateEmail), async (req, res) => {
