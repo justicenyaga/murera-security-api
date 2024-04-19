@@ -96,5 +96,6 @@ function validateUser(user) {
   return schema.validate(user);
 }
 
+exports.userSchema = userSchema;
 exports.User = User;
 exports.validateUser = validateUser;
