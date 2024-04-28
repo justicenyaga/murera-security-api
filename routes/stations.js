@@ -30,4 +30,9 @@ router.post(
   },
 );
 
+router.get("/", auth, async (_req, res) => {
+  const stations = await PoliceStation.find().select("-updatedAt -__v");
+  res.send(stations);
+});
+
 module.exports = router;
