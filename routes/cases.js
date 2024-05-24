@@ -40,4 +40,14 @@ router.post("/", [auth, validateWith(validateCase)], async (req, res) => {
   res.send(output);
 });
 
+router.get("/user", auth, async (req, res) => {
+  const user = await User.findById(req.user._id);
+  if (!user) return res.status(400).send("Invalid token");
+
+  const cases = await Case.find({ reportedBy: user._id }).select(
+    "-__v -updatedAt -reportedBy",
+  );
+  res.send(cases);
+});
+
 module.exports = router;
