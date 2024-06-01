@@ -54,12 +54,19 @@ router.get("/me", auth, async (req, res) => {
   res.send(userMapper(user.toObject()));
 });
 
-router.post("/check-email", validateWith(validateEmail), async (req, res) => {
-  const user = await User.findOne({ email: req.body.email });
-  if (user) return res.status(400).send("Email already registered");
+router.post(
+  "/check-contacts",
+  validateWith(validateContacts),
+  async (req, res) => {
+    let user = await User.findOne({ phone: req.body.phone });
+    if (user) return res.status(400).send("Phone number is already in use");
 
-  res.send("Email is available");
-});
+    user = await User.findOne({ email: req.body.email });
+    if (user) return res.status(400).send("Email is already in use");
+
+    res.send("Contacts available");
+  },
+);
 
 router.post("/check-nid", validateWith(validateNId), async (req, res) => {
   const user = await User.findOne({ nationalId: req.body.nationalId });
@@ -178,6 +185,15 @@ function validateEmail(email) {
     email: Joi.string().min(5).max(255).required().email(),
   });
   return schema.validate(email);
+}
+
+function validateContacts(contacts) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).required().email(),
+    phone: Joi.string().min(6).max(15).required(),
+  });
+
+  return schema.validate(contacts);
 }
 
 function validateNId(nid) {
