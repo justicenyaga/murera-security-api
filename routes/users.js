@@ -75,49 +75,55 @@ router.post("/check-nid", validateWith(validateNId), async (req, res) => {
   res.send("National ID is available");
 });
 
-router.post("/", validateWith(validateUser), async (req, res) => {
-  const data = req.body;
+router.post(
+  "/",
+  [upload.single("image"), imageResize, validateWith(validateUser)],
+  async (req, res) => {
+    const data = req.body;
 
-  let user = await User.findOne({ nationalId: data.nationalId });
-  if (user) {
-    return res
-      .status(400)
-      .send("User with the given ID number already registered.");
-  }
+    let user = await User.findOne({ nationalId: data.nationalId });
+    if (user) {
+      return res
+        .status(400)
+        .send("User with the given ID number already registered.");
+    }
 
-  user = await User.findOne({ email: data.email });
-  if (user) {
-    return res.status(400).send("An account with this email already exists.");
-  }
+    user = await User.findOne({ email: data.email });
+    if (user) {
+      return res.status(400).send("An account with this email already exists.");
+    }
 
-  user = new User({
-    firstName: data.firstName,
-    lastName: data.lastName,
-    nationalId: data.nationalId,
-    email: data.email,
-    dob: data.dob,
-    phone: data.phone,
-    image: "default.jpg",
-    password: data.password,
-    emailToken: crypto.randomBytes(64).toString("hex"),
-  });
+    const image = req.image || "default.jpg";
 
-  const salt = await bcrypt.genSalt(10);
-  user.password = await bcrypt.hash(user.password, salt);
+    user = new User({
+      firstName: data.firstName,
+      lastName: data.lastName,
+      nationalId: data.nationalId,
+      email: data.email,
+      dob: data.dob,
+      phone: data.phone,
+      image,
+      password: data.password,
+      emailToken: crypto.randomBytes(64).toString("hex"),
+    });
 
-  const emailData = _.pick(user, ["firstName", "email", "emailToken"]);
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(user.password, salt);
 
-  const { ok, error } = await sendActivationEmail(emailData);
-  if (!ok) {
-    logger.error(error.message);
-    return res.status(500).send("Failed to send email.");
-  }
+    const emailData = _.pick(user, ["firstName", "email", "emailToken"]);
 
-  await user.save();
+    const { ok, error } = await sendActivationEmail(emailData);
+    if (!ok) {
+      logger.error(error.message);
+      return res.status(500).send("Failed to send email.");
+    }
 
-  const omitFields = ["emailToken", "password", "__v", "updatedAt"];
-  res.send(userMapper(_.omit(user.toObject(), omitFields)));
-});
+    await user.save();
+
+    const omitFields = ["emailToken", "password", "__v", "updatedAt"];
+    res.send(userMapper(_.omit(user.toObject(), omitFields)));
+  },
+);
 
 router.post(
   "/upload-image",
