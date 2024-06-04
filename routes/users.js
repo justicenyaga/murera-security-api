@@ -125,8 +125,8 @@ router.post(
   },
 );
 
-router.post(
-  "/upload-image",
+router.put(
+  "/change-image",
   [upload.single("image"), auth, imageResize],
   async (req, res) => {
     const user = await User.findById(req.user._id);
