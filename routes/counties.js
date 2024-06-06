@@ -42,4 +42,21 @@ router.get("/:code", async (req, res) => {
   res.send(county);
 });
 
+router.put(
+  "/:code",
+  [auth, superAdmin, validateWith(validateCounty)],
+  async (req, res) => {
+    const county = await County.findOne({ code: req.params.code });
+    if (!county) {
+      return res.status(404).send("County with the given code was not found.");
+    }
+
+    county.code = req.body.code;
+    county.name = req.body.name;
+    await county.save();
+
+    res.send(_.pick(county.toObject(), ["code", "name"]));
+  },
+);
+
 module.exports = router;
