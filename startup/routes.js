@@ -4,6 +4,7 @@ const morgan = require("morgan");
 
 const auth = require("../routes/auth");
 const cases = require("../routes/cases");
+const counties = require("../routes/counties");
 const passwordReset = require("../routes/passwordReset");
 const stations = require("../routes/stations");
 const users = require("../routes/users");
@@ -19,6 +20,7 @@ module.exports = function (app) {
 
   app.use("/api/auth", auth);
   app.use("/api/cases", cases);
+  app.use("/api/counties", counties);
   app.use("/api/password-reset", passwordReset);
   app.use("/api/stations", stations);
   app.use("/api/users", users);
