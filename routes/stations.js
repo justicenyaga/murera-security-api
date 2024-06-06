@@ -63,4 +63,18 @@ router.get("/", auth, async (_req, res) => {
   res.send(stations);
 });
 
+router.get("/subcounty/:id", auth, async (req, res) => {
+  const stations = await PoliceStation.find({ subCounty: req.params.id })
+    .select("-updatedAt -__v")
+    .populate({
+      path: "subCounty",
+      select: "name county",
+      populate: {
+        path: "county",
+        select: "code name -_id",
+      },
+    });
+  res.send(stations);
+});
+
 module.exports = router;
