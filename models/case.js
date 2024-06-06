@@ -33,12 +33,7 @@ const Case = mongoose.model(
       },
       status: {
         type: String,
-        enum: [
-          status.PENDING,
-          status.IN_PROGRESS,
-          status.RESOLVED,
-          status.CLOSED,
-        ],
+        enum: Object.values(status),
         default: status.PENDING,
       },
       location: {
