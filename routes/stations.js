@@ -22,7 +22,14 @@ router.post(
         .send("Sub-county with the given ID was not found.");
     }
 
-    const station = new PoliceStation({
+    let station = await PoliceStation.findOne({ phone: data.phone });
+    if (station) {
+      return res
+        .status(400)
+        .send("Police station with the given phone number already exists.");
+    }
+
+    station = new PoliceStation({
       name: data.name,
       phone: data.phone,
       subCounty: subCounty._id,
