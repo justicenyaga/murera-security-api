@@ -36,4 +36,11 @@ router.post(
   },
 );
 
+router.get("/", async (_req, res) => {
+  const subCounties = await SubCounty.find()
+    .populate("county", "code name -_id")
+    .select("name county");
+  res.send(subCounties);
+});
+
 module.exports = router;
