@@ -54,4 +54,36 @@ router.get("/:id", async (req, res) => {
   res.send(subCounty);
 });
 
+router.put(
+  "/:id",
+  [auth, superAdmin, validateWith(validateSubCounty)],
+  async (req, res) => {
+    const county = await County.findOne({ code: req.body.countyCode });
+    if (!county) {
+      return res.status(404).send("County with the given code was not found.");
+    }
+
+    const subCounty = await SubCounty.findById(req.params.id);
+    if (!subCounty) {
+      return res
+        .status(404)
+        .send("Sub-county with the given ID was not found.");
+    }
+
+    subCounty.name = req.body.name;
+    subCounty.county = county._id;
+    await subCounty.save();
+
+    const output = {
+      _id: subCounty._id,
+      name: subCounty.name,
+      county: {
+        code: county.code,
+        name: county.name,
+      },
+    };
+    res.send(output);
+  },
+);
+
 module.exports = router;
