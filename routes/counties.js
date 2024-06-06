@@ -59,4 +59,14 @@ router.put(
   },
 );
 
+router.delete("/:code", [auth, superAdmin], async (req, res) => {
+  const county = await County.findOne({ code: req.params.code });
+  if (!county) {
+    return res.status(404).send("County with the given code was not found.");
+  }
+
+  await county.deleteOne();
+  res.send(_.pick(county.toObject(), ["code", "name"]));
+});
+
 module.exports = router;
