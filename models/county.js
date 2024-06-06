@@ -8,8 +8,8 @@ const County = mongoose.model(
       type: Number,
       required: true,
       unique: true,
-      min: 0,
-      max: 46,
+      min: 1,
+      max: 47,
     },
     name: {
       type: String,
