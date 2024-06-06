@@ -26,4 +26,20 @@ router.post(
   },
 );
 
+router.get("/", async (_req, res) => {
+  const counties = await County.find().select("code name").sort("name");
+  res.send(counties);
+});
+
+router.get("/:code", async (req, res) => {
+  const county = await County.findOne({ code: req.params.code }).select(
+    "code name",
+  );
+  if (!county) {
+    return res.status(404).send("County with the given code was not found.");
+  }
+
+  res.send(county);
+});
+
 module.exports = router;
