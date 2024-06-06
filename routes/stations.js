@@ -1,32 +1,44 @@
-const _ = require("lodash");
 const express = require("express");
 const router = express.Router();
 
+const { SubCounty } = require("../models/subCounty");
 const { PoliceStation, validateStation } = require("../models/station");
-const admin = require("../middlewares/admin");
 const auth = require("../middlewares/auth");
+const superAdmin = require("../middlewares/superAdmin");
 const validateWith = require("../middlewares/validate");
 
 router.post(
   "/",
-  [auth, admin, validateWith(validateStation)],
+  [auth, superAdmin, validateWith(validateStation)],
   async (req, res) => {
     const data = req.body;
 
+    const subCounty = await SubCounty.findById(data.subCounty)
+      .select("name county")
+      .populate("county", "code name -_id");
+    if (!subCounty) {
+      return res
+        .status(404)
+        .send("Sub-county with the given ID was not found.");
+    }
+
     const station = new PoliceStation({
       name: data.name,
-      phoneNumber: data.phoneNumber,
-      address: data.address,
+      phone: data.phone,
+      subCounty: subCounty._id,
       officersCount: data.officerCount,
-      location: {
-        longitude: data.location.longitude,
-        latitude: data.location.latitude,
-      },
     });
 
     await station.save();
 
-    res.send(_.omit(station.toObject(), ["updatedAt", "__v"]));
+    const output = {
+      _id: station._id,
+      name: station.name,
+      phone: station.phone,
+      officersCount: station.officersCount,
+      subCounty,
+    };
+    res.send(output);
   },
 );
 
