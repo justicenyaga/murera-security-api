@@ -43,4 +43,15 @@ router.get("/", async (_req, res) => {
   res.send(subCounties);
 });
 
+router.get("/:id", async (req, res) => {
+  const subCounty = await SubCounty.findById(req.params.id)
+    .select("name county")
+    .populate("county", "code name -_id");
+  if (!subCounty) {
+    return res.status(404).send("Sub-county with the given ID was not found.");
+  }
+
+  res.send(subCounty);
+});
+
 module.exports = router;
