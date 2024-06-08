@@ -22,10 +22,6 @@ router.post("/", [auth, validateWith(validateCase)], async (req, res) => {
   const newCase = new Case({
     title: data.title,
     description: data.description,
-    location: {
-      longitude: data.location.longitude,
-      latitude: data.location.latitude,
-    },
     reportedBy: user._id,
     station: station._id,
   });
