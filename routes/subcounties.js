@@ -39,7 +39,8 @@ router.post(
 router.get("/", async (_req, res) => {
   const subCounties = await SubCounty.find()
     .populate("county", "code name -_id")
-    .select("name county");
+    .select("name county")
+    .sort("name");
   res.send(subCounties);
 });
 
@@ -62,7 +63,8 @@ router.get("/county/:code", async (req, res) => {
 
   const subCounties = await SubCounty.find({ county: county._id })
     .select("name county")
-    .populate("county", "code name -_id");
+    .populate("county", "code name -_id")
+    .sort("name");
   res.send(subCounties);
 });
 
