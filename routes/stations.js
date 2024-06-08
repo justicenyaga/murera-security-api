@@ -59,7 +59,8 @@ router.get("/", auth, async (_req, res) => {
         path: "county",
         select: "code name -_id",
       },
-    });
+    })
+    .sort("name");
   res.send(stations);
 });
 
@@ -73,7 +74,8 @@ router.get("/subcounty/:id", auth, async (req, res) => {
         path: "county",
         select: "code name -_id",
       },
-    });
+    })
+    .sort("name");
   res.send(stations);
 });
 
