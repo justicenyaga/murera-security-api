@@ -40,9 +40,10 @@ router.get("/user", auth, async (req, res) => {
   const user = await User.findById(req.user._id);
   if (!user) return res.status(400).send("Invalid token");
 
-  const cases = await Case.find({ reportedBy: user._id }).select(
-    "-__v -updatedAt -reportedBy",
-  );
+  const cases = await Case.find({ reportedBy: user._id })
+    .select("-__v -updatedAt -reportedBy")
+    .populate("station", "name")
+    .sort("-createdAt");
   res.send(cases);
 });
 
