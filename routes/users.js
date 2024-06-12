@@ -208,6 +208,36 @@ router.put(
   },
 );
 
+router.put(
+  "/change-phone",
+  [auth, validateWith(validatePhonePassword)],
+  async (req, res) => {
+    const { phone, password } = req.body;
+
+    let user = await User.findOne({ phone });
+    if (user) return res.status(400).send("Phone number already in use");
+
+    user = await User.findById(req.user._id);
+    if (!user) return res.status(404).send("User not found");
+
+    const validPassword = await bcrypt.compare(password, user.password);
+    if (!validPassword) return res.status(400).send("Incorrect password");
+
+    user.phone = phone;
+    await user.save();
+
+    res.send("Phone number change successfully");
+  },
+);
+
+function validateContacts(contacts) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).required().email(),
+    phone: Joi.string().min(6).max(15).required(),
+  });
+
+  return schema.validate(contacts);
+}
 function validateEmail(email) {
   const schema = Joi.object({
     email: Joi.string().min(5).max(255).required().email(),
@@ -223,20 +253,19 @@ function validateEmailPassword(body) {
   return schema.validate(body);
 }
 
-function validateContacts(contacts) {
-  const schema = Joi.object({
-    email: Joi.string().min(5).max(255).required().email(),
-    phone: Joi.string().min(6).max(15).required(),
-  });
-
-  return schema.validate(contacts);
-}
-
 function validateNId(nid) {
   const schema = Joi.object({
     nationalId: Joi.number().min(100000).max(50000000).required(),
   });
   return schema.validate(nid);
+}
+
+function validatePhonePassword(body) {
+  const schema = Joi.object({
+    phone: Joi.string().min(6).max(15).required(),
+    password: Joi.string().min(5).max(255).required(),
+  });
+  return schema.validate(body);
 }
 
 module.exports = router;
