@@ -186,11 +186,41 @@ router.get("/verify-email/:emailToken", async (req, res) => {
   res.render(views.ACTIVATION_SUCCESS, { serverUrl });
 });
 
+router.put(
+  "/change-email",
+  [auth, validateWith(validateEmailPassword)],
+  async (req, res) => {
+    const { email, password } = req.body;
+
+    let user = await User.findOne({ email });
+    if (user) return res.status(400).send("Email already in use");
+
+    user = await User.findById(req.user._id);
+    if (!user) return res.status(404).send("User not found");
+
+    const validpassword = await bcrypt.compare(password, user.password);
+    if (!validpassword) return res.status(400).send("Incorrect password.");
+
+    user.email = email;
+    await user.save();
+
+    res.send("Email changed successfully");
+  },
+);
+
 function validateEmail(email) {
   const schema = Joi.object({
     email: Joi.string().min(5).max(255).required().email(),
   });
   return schema.validate(email);
+}
+
+function validateEmailPassword(body) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).required().email(),
+    password: Joi.string().min(5).max(255).required(),
+  });
+  return schema.validate(body);
 }
 
 function validateContacts(contacts) {
