@@ -230,6 +230,28 @@ router.put(
   },
 );
 
+router.put(
+  "/change-password",
+  [auth, validateWith(validatePasswords)],
+  async (req, res) => {
+    const { newPassword, currentPassword } = req.body;
+
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).send("User not found");
+
+    const validPassword = await bcrypt.compare(currentPassword, user.password);
+    if (!validPassword) {
+      return res.status(400).send("Incorrect current password");
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+
+    res.send("Password changed successfully");
+  },
+);
+
 function validateContacts(contacts) {
   const schema = Joi.object({
     email: Joi.string().min(5).max(255).required().email(),
@@ -258,6 +280,14 @@ function validateNId(nid) {
     nationalId: Joi.number().min(100000).max(50000000).required(),
   });
   return schema.validate(nid);
+}
+
+function validatePasswords(body) {
+  const schema = Joi.object({
+    newPassword: Joi.string().min(5).max(255).required(),
+    currentPassword: Joi.string().min(5).max(255).required(),
+  });
+  return schema.validate(body);
 }
 
 function validatePhonePassword(body) {
