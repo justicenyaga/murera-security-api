@@ -1,6 +1,7 @@
 const express = require("express");
 const compression = require("compression");
 const morgan = require("morgan");
+const cors = require("cors");
 
 const auth = require("../routes/auth");
 const cases = require("../routes/cases");
@@ -11,6 +12,10 @@ const subcounties = require("../routes/subcounties");
 const users = require("../routes/users");
 const error = require("../middlewares/error");
 
+const corsOptions = {
+  origin: ["http://localhost:3000"],
+};
+
 module.exports = function (app) {
   app.use(morgan("tiny"));
   app.use(express.static("public"));
@@ -18,6 +23,7 @@ module.exports = function (app) {
   app.set("view engine", "ejs");
   app.use(express.json());
   app.use(compression());
+  app.use(cors(corsOptions));
 
   app.use("/api/auth", auth);
   app.use("/api/cases", cases);
