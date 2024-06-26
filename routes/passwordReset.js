@@ -73,6 +73,16 @@ router.post("/request", validateWith(validateEmailOrID), async (req, res) => {
   res.send({ email: user.email });
 });
 
+router.post("/admin-request", validateWith(validateEmail), async (req, res) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!(user?.isAdmin || user?.isSuperAdmin)) {
+    return res.status(400).send("Admin with the given email does not exist");
+  }
+
+  res.send({ email: user.email });
+});
+
 router.post("/verify-otp", validateWith(validateOtp), async (req, res) => {
   const user = await User.findOne({
     passwordResetOtp: req.body.otp,
@@ -82,6 +92,13 @@ router.post("/verify-otp", validateWith(validateOtp), async (req, res) => {
 
   res.send("OTP verified successfully.");
 });
+
+function validateEmail(email) {
+  const schema = Joi.object({
+    email: Joi.string().min(5).max(255).required().email(),
+  });
+  return schema.validate(email);
+}
 
 function validateEmailOrID(emailOrId) {
   const schema = Joi.object({
