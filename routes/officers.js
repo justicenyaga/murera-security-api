@@ -42,6 +42,21 @@ const upload = multer({
   },
 });
 
+router.get("/all", [auth, superAdmin], async (_req, res) => {
+  const officers = await Officer.find()
+    .select("-__v -updatedAt")
+    .populate("user", "-password -__v -updatedAt")
+    .populate("station", "-__v -updatedAt")
+    .sort("badgeNumber");
+
+  res.send(
+    officers.map((officer) => ({
+      ...officer.toObject(),
+      user: userMapper(officer.toObject().user),
+    })),
+  );
+});
+
 router.post(
   "/register",
   [
