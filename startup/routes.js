@@ -6,6 +6,7 @@ const cors = require("cors");
 const auth = require("../routes/auth");
 const cases = require("../routes/cases");
 const counties = require("../routes/counties");
+const officers = require("../routes/officers");
 const passwordReset = require("../routes/passwordReset");
 const stations = require("../routes/stations");
 const subcounties = require("../routes/subcounties");
@@ -28,6 +29,7 @@ module.exports = function (app) {
   app.use("/api/auth", auth);
   app.use("/api/cases", cases);
   app.use("/api/counties", counties);
+  app.use("/api/officers", officers);
   app.use("/api/password-reset", passwordReset);
   app.use("/api/stations", stations);
   app.use("/api/subcounties", subcounties);
