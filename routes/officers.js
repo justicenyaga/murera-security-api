@@ -107,6 +107,17 @@ router.put(
   },
 );
 
+router.delete("/:id", [auth, superAdmin], async (req, res) => {
+  const officer = await Officer.findByIdAndDelete(req.params.id);
+  if (!officer) return res.status(404).send("Officer not found.");
+
+  const user = await User.findById(officer.user);
+  user.isAdmin = false;
+  await user.save();
+
+  res.send("Officer deleted.");
+});
+
 router.post(
   "/register",
   [
