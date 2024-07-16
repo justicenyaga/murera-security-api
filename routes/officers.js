@@ -9,6 +9,7 @@ const router = express.Router();
 const { Officer, validateOfficer } = require("../models/officer");
 const { User } = require("../models/user");
 const { PoliceStation } = require("../models/station");
+const admin = require("../middlewares/admin");
 const auth = require("../middlewares/auth");
 const imageResize = require("../middlewares/imageResize");
 const logger = require("../logger");
@@ -44,6 +45,24 @@ const upload = multer({
 
 router.get("/all", [auth, superAdmin], async (_req, res) => {
   const officers = await Officer.find()
+    .select("-__v -updatedAt")
+    .populate("user", "-password -__v -updatedAt")
+    .populate("station", "-__v -updatedAt")
+    .sort("badgeNumber");
+
+  res.send(
+    officers.map((officer) => ({
+      ...officer.toObject(),
+      user: userMapper(officer.toObject().user),
+    })),
+  );
+});
+
+router.get("/mystation", [auth, admin], async (req, res) => {
+  const user = await User.findById(req.user._id);
+  const officer = await Officer.findOne({ user: user._id });
+
+  const officers = await Officer.find({ station: officer.station })
     .select("-__v -updatedAt")
     .populate("user", "-password -__v -updatedAt")
     .populate("station", "-__v -updatedAt")
