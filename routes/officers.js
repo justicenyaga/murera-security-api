@@ -78,6 +78,35 @@ router.get("/:id", [auth, superAdmin], async (req, res) => {
   res.send(officer);
 });
 
+router.put(
+  "/:id",
+  [auth, superAdmin, validateWith(validateOfficer)],
+  async (req, res) => {
+    const officer = await Officer.findById(req.params.id);
+    if (!officer) return res.status(404).send("Officer not found.");
+
+    const data = req.body;
+
+    const station = await PoliceStation.findById(data.stationId);
+    if (!station) return res.status(400).send("Invalid station.");
+
+    const user = await User.findById(officer.user);
+    user.firstName = data.firstName;
+    user.lastName = data.lastName;
+    user.nationalId = data.nationalId;
+    user.dob = data.dob;
+    user.email = data.email;
+    user.phone = data.phone;
+    await user.save();
+
+    officer.badgeNumber = data.badgeNumber;
+    officer.station = station._id;
+    await officer.save();
+
+    res.send("Officer updated.");
+  },
+);
+
 router.post(
   "/register",
   [
