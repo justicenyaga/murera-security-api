@@ -57,6 +57,27 @@ router.get("/all", [auth, superAdmin], async (_req, res) => {
   );
 });
 
+router.get("/:id", [auth, superAdmin], async (req, res) => {
+  const officer = await Officer.findById(req.params.id)
+    .select("-__v -updatedAt")
+    .populate("user", "-password -__v -updatedAt")
+    .populate({
+      path: "station",
+      select: "name subCounty",
+      populate: {
+        path: "subCounty",
+        select: "name county",
+        populate: {
+          path: "county",
+          select: "name code",
+        },
+      },
+    });
+
+  if (!officer) return res.status(404).send("Officer not found.");
+  res.send(officer);
+});
+
 router.post(
   "/register",
   [
