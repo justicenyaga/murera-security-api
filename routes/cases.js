@@ -5,8 +5,18 @@ const router = express.Router();
 const { Case, validateCase } = require("../models/case");
 const { PoliceStation } = require("../models/station");
 const { User } = require("../models/user");
+const admin = require("../middlewares/admin");
 const auth = require("../middlewares/auth");
 const validateWith = require("../middlewares/validate");
+
+router.get("/all", [auth, admin], async (_req, res) => {
+  const cases = await Case.find()
+    .select("-__v -updatedAt")
+    .populate("reportedBy", "firstName lastName")
+    .populate("station");
+
+  res.send(cases);
+});
 
 router.post("/", [auth, validateWith(validateCase)], async (req, res) => {
   const data = req.body;
