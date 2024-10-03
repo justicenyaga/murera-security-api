@@ -8,5 +8,5 @@ require("./startup/validation")();
 require("./startup/db")();
 require("./startup/routes")(app);
 
-const port = process.env.PORT || config.get("port");
+const port = config.get("port");
 app.listen(port, () => logger.info(`Listening on port ${port}...`));

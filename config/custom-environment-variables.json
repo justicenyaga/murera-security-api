@@ -1,5 +1,7 @@
 {
-  "jwtPrivateKey": "mureraSec_jwtPrivateKey",
-  "email": "mureraSec_email",
-  "emailPassword": "mureraSec_emailPassword"
+  "jwtPrivateKey": "JWT_PRIVATE_KEY",
+  "email": "NODEMAILER_EMAIL",
+  "emailPassword": "NODEMAILER_EMAIL_PASSWORD",
+  "port": "PORT",
+  "db": "DB_URL"
 }
